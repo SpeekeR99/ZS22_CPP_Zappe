@@ -1,0 +1,21 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="160" height="160" version="1.1" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="100%" height="100%" fill="white" />
+<circle cx="133.838835" cy="38.661165" r="5.000000" stroke="black" stroke-width="2" fill="none" />
+<line x1="133.838835" y1="38.661165" x2="116.161165" y2="56.338835" stroke="black" stroke-width="2" />
+<circle cx="116.161165" cy="56.338835" r="7.500000" stroke="black" stroke-width="2" fill="none" />
+<line x1="155.000000" y1="5.000000" x2="155.000000" y2="25.000000" stroke="black" stroke-width="2" />
+<line x1="140.000000" y1="5.000000" x2="140.000000" y2="25.000000" stroke="black" stroke-width="2" />
+<line x1="155.000000" y1="5.000000" x2="140.000000" y2="5.000000" stroke="black" stroke-width="2" />
+<line x1="155.000000" y1="25.000000" x2="140.000000" y2="25.000000" stroke="black" stroke-width="2" />
+
+<line x1="155.000000" y1="5.000000" x2="140.000000" y2="25.000000" stroke="black" stroke-width="2" />
+<line x1="140.000000" y1="5.000000" x2="155.000000" y2="25.000000" stroke="black" stroke-width="2" />
+<circle cx="40.000000" cy="120.000000" r="30.000000" stroke="black" stroke-width="2" fill="none" />
+<circle cx="120.000000" cy="120.000000" r="30.000000" stroke="black" stroke-width="2" fill="none" />
+<line x1="10.000000" y1="10.000000" x2="70.000000" y2="10.000000" stroke="black" stroke-width="2" />
+<line x1="10.000000" y1="70.000000" x2="70.000000" y2="70.000000" stroke="black" stroke-width="2" />
+<line x1="10.000000" y1="10.000000" x2="10.000000" y2="70.000000" stroke="black" stroke-width="2" />
+<line x1="70.000000" y1="10.000000" x2="70.000000" y2="70.000000" stroke="black" stroke-width="2" />
+
+</svg>
