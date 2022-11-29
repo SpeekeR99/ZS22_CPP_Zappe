@@ -6,36 +6,29 @@
 #include <vector>
 
 constexpr uint32_t BASE = 1000000000;
-constexpr uint32_t MAX_NUMBER = BASE - 1;
 constexpr uint8_t MAX_DIGITS = 9;
 constexpr int8_t UNLIMITED = -1;
 
-template <int32_t max_bytes>
+template <int x, int y>
+struct MyMax {
+    static const int value = (x == UNLIMITED || y == UNLIMITED) ? UNLIMITED : (x > y) ? x : y;
+};
+
+template <int32_t max_digits>
 class MPInt {
 private:
     std::vector<uint32_t> number;
     int8_t sign;
 
-    template<int32_t max_bytes1, int32_t max_bytes2>
-    std::vector<uint32_t> add(const MPInt<max_bytes1> &num1, const MPInt<max_bytes2> &num2) {
-        MPInt result{};
-        std::vector<uint32_t> result_number;
-
-        int32_t carry = 0;
-        for (size_t i = 0; i < num1.number.size() || carry; i++) {
-            int32_t sum = (num1.number.size() >= i ? num1.number[i] : 0) +
-                          (num2.number.size() >= i ? num2.number[i] : 0) + carry;
-            carry = sum >= BASE;
-            if (carry) sum -= BASE;
-            result_number.push_back(sum);
+    void checkLengthOfDigits() const {
+        if (max_digits != UNLIMITED && number.size() * MAX_DIGITS > max_digits) {
+            std::string str_num = std::to_string(number[number.size() - 1]);
+            if (str_num.length() > max_digits % MAX_DIGITS)
+                throw std::overflow_error("Number " + toString() + " is too big for " + std::to_string(max_digits) + " digits");
         }
-
-        return result_number;
     }
 
 public:
-    MPInt() = default;
-
     explicit MPInt(const std::string &num) : number(), sign(1) {
         std::string num_copy = num;
 
@@ -50,11 +43,20 @@ public:
             else
                 number.push_back(std::stoi(num_copy.substr(i - MAX_DIGITS, MAX_DIGITS)));
         }
+
+        checkLengthOfDigits();
     }
 
-    MPInt(std::vector<uint32_t> num, int8_t sign) : number(std::move(num)), sign(sign) { }
+    MPInt(std::vector<uint32_t> num, int8_t sign) : number(std::move(num)), sign(sign) {
+        checkLengthOfDigits();
+    }
 
     ~MPInt() = default;
+
+    template<int32_t max_digits_other>
+    auto operator+(const MPInt<max_digits_other> &other) {
+        return MPInt<MyMax<max_digits, max_digits_other>::value>{add(*this, other), 1};
+    }
 
     std::string toString() const {
         std::stringstream result;
@@ -65,9 +67,24 @@ public:
         return result.str();
     }
 
-    template<int32_t other_max_bytes>
-    MPInt operator+(const MPInt<other_max_bytes> &other) {
-        return MPInt<max_bytes>(add(*this, other), 1);
+    std::vector<uint32_t> getNumber() const {
+        return number;
     }
 
 };
+
+template<int32_t max_digits1, int32_t max_digits2>
+std::vector<uint32_t> add(const MPInt<max_digits1> &num1, const MPInt<max_digits2> &num2) {
+    std::vector<uint32_t> result_number;
+
+    uint8_t carry = 0;
+    for (size_t i = 0; i < num1.getNumber().size() || i < num2.getNumber().size() || carry; i++) {
+        int32_t sum = (num1.getNumber().size() > i ? num1.getNumber()[i] : 0) +
+                      (num2.getNumber().size() > i ? num2.getNumber()[i] : 0) + carry;
+        carry = sum / BASE;
+        sum %= BASE;
+        result_number.push_back(sum);
+    }
+
+    return result_number;
+}
