@@ -3,4 +3,4 @@ project(SP2)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(SP2 main.cpp)
+add_executable(SP2 main.cpp MultiplePrecisionArithmetic.h)
