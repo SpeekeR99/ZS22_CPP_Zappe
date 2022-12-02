@@ -25,7 +25,7 @@ template <int32_t max_digits>
 class MPInt {
 private:
     std::vector<uint32_t> mNumber;
-    int8_t mSign;
+    int32_t mSign;
 
     void checkLengthOfDigits() const {
         if (max_digits == UNLIMITED)
@@ -57,11 +57,10 @@ private:
         std::vector<uint32_t> result_number;
 
         uint8_t carry = 0;
-        for (size_t i = 0; i < num1.size() || i < num2.size() || carry; i++) {
-            uint32_t sum = (num1.size() > i ? num1[i] : 0) -
-                           (num2.size() > i ? num2[i] : 0) - carry;
+        for (size_t i = 0; i < num1.size() || carry; i++) {
+            auto sum = static_cast<int32_t>(num1[i] - (num2.size() > i ? num2[i] : 0) - carry);
             carry = sum < 0;
-            sum += carry * BASE;
+            sum += static_cast<int32_t>(carry * BASE);
             result_number.push_back(sum);
         }
 
@@ -90,7 +89,7 @@ public:
         checkLengthOfDigits();
     }
 
-    MPInt(std::vector<uint32_t> num, int8_t sign) : mNumber(std::move(num)), mSign(sign) {
+    MPInt(std::vector<uint32_t> num, int32_t sign) : mNumber(std::move(num)), mSign(sign) {
         checkLengthOfDigits();
     }
 
@@ -100,13 +99,13 @@ public:
 
     template<int32_t max_digits_other>
     MPInt<MaxDigits<max_digits, max_digits_other>::value> operator+(const MPInt<max_digits_other> &other) {
-        // Adding two positive or two negative numbers
+        // + + + OR - + - -> Addition
         if (mSign == other.getSign())
             return {add(mNumber, other.getNumber()), mSign};
-        // Addition -> Subtraction
+        // + + - OR - + + -> Subtraction (but swap sign of the second operand)
         else {
-            // TODO
-            return {std::vector<uint32_t>(), 0};
+            MPInt<max_digits_other> tmp {other.getNumber(), -other.getSign()};
+            return *this - tmp;
         }
     }
 
@@ -122,7 +121,26 @@ public:
 
     template<int32_t max_digits_other>
     MPInt<MaxDigits<max_digits, max_digits_other>::value> operator-(const MPInt<max_digits_other> &other) {
-        return {sub(mNumber, other.getNumber()), mSign};
+        // + - + OR - - - -> Subtraction
+        if (mSign == other.getSign()) {
+            if (*this >= other)
+                return {sub(mNumber, other.getNumber()), mSign};
+            else
+                return {sub(other.getNumber(), mNumber), -mSign};
+        }
+        // + - - OR - - + -> Addition (but swap sign of the second operand)
+        else {
+            MPInt<max_digits_other> tmp {other.getNumber(), -other.getSign()};
+            return *this + tmp;
+        }
+    }
+
+    template<int32_t max_digits_other>
+    MPInt operator-=(const MPInt<max_digits_other> &other) {
+        auto result = *this - other;
+        mNumber = result.getNumber();
+        mSign = result.getSign();
+        return *this;
     }
 
     template<int32_t max_digits_other>
@@ -169,8 +187,12 @@ public:
         return mNumber;
     }
 
-    int8_t getSign() const {
+    int32_t getSign() const {
         return mSign;
+    }
+
+    void setSign(int32_t sign) {
+        mSign = sign;
     }
 
 };
