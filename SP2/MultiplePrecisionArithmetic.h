@@ -53,6 +53,24 @@ private:
         return result_number;
     }
 
+    std::vector<uint32_t> sub(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
+        std::vector<uint32_t> result_number;
+
+        uint8_t carry = 0;
+        for (size_t i = 0; i < num1.size() || i < num2.size() || carry; i++) {
+            uint32_t sum = (num1.size() > i ? num1[i] : 0) -
+                           (num2.size() > i ? num2[i] : 0) - carry;
+            carry = sum < 0;
+            sum += carry * BASE;
+            result_number.push_back(sum);
+        }
+
+        while (result_number.size() > 1 && result_number.back() == 0)
+            result_number.pop_back();
+
+        return result_number;
+    }
+
 public:
     explicit MPInt(const std::string &num) : mNumber(), mSign(1) {
         std::string num_copy = num;
@@ -100,6 +118,37 @@ public:
         mNumber = result.getNumber();
         mSign = result.getSign();
         return *this;
+    }
+
+    template<int32_t max_digits_other>
+    MPInt<MaxDigits<max_digits, max_digits_other>::value> operator-(const MPInt<max_digits_other> &other) {
+        return {sub(mNumber, other.getNumber()), mSign};
+    }
+
+    template<int32_t max_digits_other>
+    std::strong_ordering operator<=>(const MPInt<max_digits_other> &other) const {
+        if (mSign != other.getSign())
+            return mSign <=> other.getSign();
+
+        if (mNumber.size() != other.getNumber().size())
+            return mNumber.size() <=> other.getNumber().size();
+
+        for (int32_t i = mNumber.size() - 1; i >= 0; i--) {
+            if (mNumber[i] != other.getNumber()[i])
+                return mNumber[i] <=> other.getNumber()[i];
+        }
+
+        return std::strong_ordering::equal;
+    }
+
+    template<int32_t max_digits_other>
+    bool operator==(const MPInt<max_digits_other> &other) const {
+        return ((*this <=> other) == std::strong_ordering::equal);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const MPInt& num) {
+        os << num.toString();
+        return os;
     }
 
     std::string toString() const {

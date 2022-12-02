@@ -2,39 +2,40 @@
 #include "MultiplePrecisionArithmetic.h"
 
 int main() {
-    MPInt<50> cislo1("111111111000001111");
-    MPInt<30> cislo2("111111111111111111");
-    auto vysledek = cislo1 + cislo2;
+    MPInt<50> cislo1("48");
+    MPInt<30> cislo2("48");
+    auto vysledek = cislo1 - cislo2;
 
-    MPInt<UNLIMITED> cislo3("1234567890123456789012345678901234567890123456789023");
+    MPInt<UNLIMITED> cislo3("9999999999999999999999999999999999999999999999999999999999999999999999999999");
     MPInt<UNLIMITED> cislo4("55555555555555555555555555555555555555555555555555555555555555555555555");
-    auto vysledek2 = cislo3 + cislo4;
+    auto vysledek2 = cislo3 - cislo4;
 
-    std::cout << cislo1.toString() << std::endl;
-    std::cout << cislo2.toString() << std::endl;
-    std::cout << vysledek.toString() << std::endl;
+    std::cout << cislo1 << std::endl;
+    std::cout << cislo2 << std::endl;
+    std::cout << vysledek << std::endl;
 
-    std::cout << cislo3.toString() << std::endl;
-    std::cout << cislo4.toString() << std::endl;
-    std::cout << vysledek2.toString() << std::endl;
+    std::cout << cislo3 << std::endl;
+    std::cout << cislo4 << std::endl;
+    std::cout << vysledek2 << std::endl;
 
-    std::cout << cislo1.toString() << std::endl;
-    try {
-        cislo1 += cislo3;
+    if (cislo1 < cislo2) {
+        std::cout << "Cislo1 je mensi nez cislo2" << std::endl;
     }
-    catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
+    if (cislo1 > cislo2) {
+        std::cout << "Cislo1 je vetsi nez cislo2" << std::endl;
     }
-    std::cout << cislo1.toString() << std::endl;
-
-    std::cout << cislo1.toString() << std::endl;
-    try {
-        cislo1 += cislo2;
+    if (cislo1 == cislo2) {
+        std::cout << "Cislo1 je rovno cislo2" << std::endl;
     }
-    catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
+    if (cislo1 != cislo2) {
+        std::cout << "Cislo1 neni rovno cislo2" << std::endl;
     }
-    std::cout << cislo1.toString() << std::endl;
+    if (cislo1 <= cislo2) {
+        std::cout << "Cislo1 je mensi nebo rovno cislo2" << std::endl;
+    }
+    if (cislo1 >= cislo2) {
+        std::cout << "Cislo1 je vetsi nebo rovno cislo2" << std::endl;
+    }
 
     return 0;
 }
