@@ -1,13 +1,11 @@
 #include "Line.h"
 
 Line::Line(const Point2D &p1, const Point2D &p2) : mP1{p1}, mP2{p2} {
-    mP1 = p1;
-    mP2 = p2;
+    //
 }
 
 Line::Line(double x1, double y1, double x2, double y2) : mP1{x1, y1}, mP2{x2, y2} {
-    mP1 = {x1, y1};
-    mP2 = {x2, y2};
+    //
 }
 
 Point2D Line::GetPoint1() const {

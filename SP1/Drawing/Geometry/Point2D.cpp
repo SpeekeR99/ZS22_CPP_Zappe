@@ -1,10 +1,7 @@
 #include "Point2D.h"
 
-constexpr double PI = 3.14159265358979323846;
-
 Point2D::Point2D(double x, double y) : mX{x}, mY{y} {
-    mX = x;
-    mY = y;
+    //
 }
 
 double Point2D::GetX() const {
@@ -24,7 +21,7 @@ void Point2D::TranslateByOrigin(double x, double y) {
 }
 
 void Point2D::RotateAroundOrigin(double angle) {
-    angle = angle * PI / 180; // Convert angle in degrees to radians
+    angle = angle * std::numbers::pi / 180; // Convert angle in degrees to radians
     double s = sin(angle);
     double c = cos(angle);
     double newX = mX * c - mY * s;

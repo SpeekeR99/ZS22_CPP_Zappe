@@ -4,18 +4,15 @@ bool CommandExecutor::ExecuteCommand(const std::shared_ptr<Canvas> &canvas, cons
     std::string cmd;
     std::vector<double> params_vector;
 
-    if (!ParseCommand(command, cmd, params_vector)) {
+    if (!ParseCommand(command, cmd, params_vector))
         return false;
-    }
 
     if (cmd == "line" || cmd == "circle" || cmd == "rect") {
-        if (!ExecuteDrawingCommand(canvas, cmd, params_vector, command)) {
+        if (!ExecuteDrawingCommand(canvas, cmd, params_vector, command))
             return false;
-        }
     } else if (cmd == "translate" || cmd == "rotate" || cmd == "scale") {
-        if (!ExecuteTransformationCommand(canvas, cmd, params_vector, command)) {
+        if (!ExecuteTransformationCommand(canvas, cmd, params_vector, command))
             return false;
-        }
     } else {
         std::cerr << "Invalid command: " << cmd << std::endl;
         return false;

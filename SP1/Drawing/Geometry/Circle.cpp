@@ -1,13 +1,11 @@
 #include "Circle.h"
 
 Circle::Circle(const Point2D &center, double radius) : mCenter{center}, mRadius{radius} {
-    mCenter = center;
-    mRadius = radius;
+    //
 }
 
 Circle::Circle(double x, double y, double radius) : mCenter{x, y}, mRadius{radius} {
-    mCenter = {x, y};
-    mRadius = radius;
+    //
 }
 
 Point2D Circle::GetCenter() const {

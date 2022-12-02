@@ -6,8 +6,6 @@ constexpr const char *pgmMaxVal = "255";
 
 PgmWriter::PgmWriter(const std::string &filename, size_t width, size_t height) : mWidth{width}, mHeight{height} {
     mFile.open(filename);
-    mWidth = width;
-    mHeight = height;
     mRaster.resize(mHeight);
     for (size_t i = 0; i < mHeight; ++i) {
         mRaster[i].resize(mWidth);

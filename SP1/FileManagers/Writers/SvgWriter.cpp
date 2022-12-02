@@ -9,8 +9,6 @@ constexpr const char *svgFooter = "</svg>";
 
 SvgWriter::SvgWriter(const std::string &filename, size_t width, size_t height) : mWidth{width}, mHeight{height} {
     mFile.open(filename);
-    mWidth = width;
-    mHeight = height;
 }
 
 SvgWriter::~SvgWriter() {
