@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <valarray>
 
 constexpr uint32_t BASE = 1000000000;
 constexpr uint8_t MAX_DIGITS = 9;
@@ -54,13 +55,12 @@ std::vector<uint32_t> sub(const std::vector<uint32_t> &num1, const std::vector<u
 }
 
 std::vector<uint32_t> mul(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
-    std::vector<uint32_t> result_number;
+    std::vector<uint32_t> result_number(num1.size() + num2.size(), 0);
 
     for (size_t i = 0; i < num1.size(); i++) {
         uint64_t carry = 0;
         for (size_t j = 0; j < num2.size() || carry; j++) {
-            uint64_t sum = static_cast<uint64_t>(result_number.size() > i + j ? result_number[i + j] : 0) +
-                           static_cast<uint64_t>(num1[i]) * (j < num2.size() ? num2[j] : 0) + carry;
+            uint64_t sum = result_number[i + j] + static_cast<uint64_t>(num1[i]) * (j < num2.size() ? num2[j] : 0) + carry;
             carry = sum / BASE;
             sum %= BASE;
             if (result_number.size() > i + j)
@@ -74,6 +74,28 @@ std::vector<uint32_t> mul(const std::vector<uint32_t> &num1, const std::vector<u
         result_number.pop_back();
 
     return result_number;
+}
+
+std::vector<uint32_t> div(const std::vector<uint32_t> &num1, uint32_t num2) {
+    std::vector<uint32_t> result_number;
+
+    uint8_t carry = 0;
+    for (int32_t i = num1.size() - 1; i >= 0; i--) {
+        uint64_t sum = static_cast<uint64_t>(num1[i]) + carry * BASE;
+        result_number.push_back(sum / num2);
+        carry = sum % num2;
+    }
+
+    while (result_number.size() > 1 && result_number.back() == 0)
+        result_number.pop_back();
+
+    return result_number;
+}
+
+std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
+    std::vector<uint32_t> result_number;
+
+
 }
 
 template <int32_t max_digits>
@@ -91,6 +113,19 @@ private:
             if (str_num.length() > max_digits % MAX_DIGITS)
                 throw std::overflow_error("Number " + toString() + " is too big for " + std::to_string(max_digits) + " digits");
         }
+    }
+
+    MPInt factorial() const {
+        MPInt result("1");
+        uint32_t i = 2;
+        while (true) {
+            MPInt temp(std::to_string(i));
+            if (temp > *this)
+                break;
+            result *= temp;
+            i++;
+        }
+        return result;
     }
 
 public:
@@ -173,12 +208,29 @@ public:
 
     template<int32_t max_digits_other>
     MPInt operator*=(const MPInt<max_digits_other> &other) {
-        auto result = *this + other;
+        auto result = *this * other;
         if (MaxDigits<max_digits, max_digits_other>::value != max_digits)
             throw std::overflow_error("Number " + result.toString() + " is too big for " + std::to_string(max_digits) + " digits");
         mNumber = result.getNumber();
         mSign = result.getSign();
         return *this;
+    }
+
+    template<int32_t max_digits_other>
+    MPInt<MaxDigits<max_digits, max_digits_other>::value> operator/(const MPInt<max_digits_other> &other) {
+        return {div(mNumber, other.getNumber()), mSign * other.getSign()};
+    }
+
+    template<int32_t max_digits_other>
+    MPInt operator/=(const MPInt<max_digits_other> &other) {
+        auto result = *this / other;
+        mNumber = result.getNumber();
+        mSign = result.getSign();
+        return *this;
+    }
+
+    MPInt operator!() {
+        return factorial();
     }
 
     template<int32_t max_digits_other>
