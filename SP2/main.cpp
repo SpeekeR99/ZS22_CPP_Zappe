@@ -1,4 +1,3 @@
-#include <iostream>
 #include "MultiplePrecisionArithmetic.h"
 
 int main() {
@@ -11,9 +10,13 @@ int main() {
     std::cout << cislo4 << std::endl;
 //    std::cout << vysledek2 << std::endl;
 
-    MPInt<UNLIMITED> cislo1("100");
-    auto factorial = (!cislo1);
-    std::cout << factorial << std::endl;
+    MPInt<50> cislo1("100");
+    try {
+        auto factorial = (!cislo1);
+        std::cout << factorial << std::endl;
+    } catch (MyOverflowException &e) {
+        std::cout << e.what() << std::endl;
+    }
 
     return 0;
 }

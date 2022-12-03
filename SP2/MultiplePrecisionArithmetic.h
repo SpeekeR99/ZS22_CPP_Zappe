@@ -1,10 +1,11 @@
 #pragma once
 
-#include <sstream>
-#include <string>
+#include <iostream>
 #include <utility>
 #include <vector>
-#include <valarray>
+#include <cstring>
+#include <string>
+#include <sstream>
 
 constexpr uint32_t BASE = 1000000000;
 constexpr uint8_t MAX_DIGITS = 9;
@@ -98,6 +99,26 @@ std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<u
 
 }
 
+class MyOverflowException : public std::exception {
+private:
+    char *message;
+
+public:
+    explicit MyOverflowException(const std::string &msg) {
+        const char *c_msg = msg.c_str();
+        message = new char[strlen(c_msg) + 1];
+        strcpy(message, c_msg);
+    }
+
+    ~MyOverflowException() override {
+        delete[] message;
+    }
+
+    char *what() {
+        return message;
+    }
+};
+
 template <int32_t max_digits>
 class MPInt {
 private:
@@ -111,7 +132,7 @@ private:
         if (mNumber.size() * MAX_DIGITS > max_digits) {
             std::string str_num = std::to_string(mNumber[mNumber.size() - 1]);
             if (str_num.length() > max_digits % MAX_DIGITS)
-                throw std::overflow_error("Number " + toString() + " is too big for " + std::to_string(max_digits) + " digits");
+                throw MyOverflowException("Number " + toString() + " is too big for " + std::to_string(max_digits) + " digits");
         }
     }
 
@@ -151,9 +172,30 @@ public:
         checkLengthOfDigits();
     }
 
-    // TODO - copy constructor, copy assignment, move constructor, move assignment
+    MPInt(const MPInt &other) noexcept : mNumber(other.mNumber), mSign(other.mSign) {
+        //
+    }
+
+    MPInt(MPInt &&other) noexcept : mNumber(std::move(other.mNumber)), mSign(other.mSign) {
+        other.mNumber = {};
+        other.mSign = 0;
+    }
 
     ~MPInt() = default;
+
+    MPInt &operator=(const MPInt &other) noexcept {
+        mNumber = other.mNumber;
+        mSign = other.mSign;
+        return *this;
+    }
+
+    MPInt &operator=(MPInt &&other) noexcept {
+        mNumber = std::move(other.mNumber);
+        mSign = other.mSign;
+        other.mNumber = {};
+        other.mSign = 0;
+        return *this;
+    }
 
     template<int32_t max_digits_other>
     MPInt<MaxDigits<max_digits, max_digits_other>::value> operator+(const MPInt<max_digits_other> &other) {
@@ -171,7 +213,7 @@ public:
     MPInt operator+=(const MPInt<max_digits_other> &other) {
         auto result = *this + other;
         if (MaxDigits<max_digits, max_digits_other>::value != max_digits)
-            throw std::overflow_error("Number " + result.toString() + " is too big for " + std::to_string(max_digits) + " digits");
+            throw MyOverflowException("Number " + result.toString() + " is too big for " + std::to_string(max_digits) + " digits");
         mNumber = result.getNumber();
         mSign = result.getSign();
         return *this;
@@ -210,7 +252,7 @@ public:
     MPInt operator*=(const MPInt<max_digits_other> &other) {
         auto result = *this * other;
         if (MaxDigits<max_digits, max_digits_other>::value != max_digits)
-            throw std::overflow_error("Number " + result.toString() + " is too big for " + std::to_string(max_digits) + " digits");
+            throw MyOverflowException("Number " + result.toString() + " is too big for " + std::to_string(max_digits) + " digits");
         mNumber = result.getNumber();
         mSign = result.getSign();
         return *this;
