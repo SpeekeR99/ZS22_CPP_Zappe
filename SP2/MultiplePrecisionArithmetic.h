@@ -21,6 +21,61 @@ struct MaxDigits {
     static const int32_t value = (x == UNLIMITED || y == UNLIMITED) ? UNLIMITED : (x > y) ? x : y;
 };
 
+std::vector<uint32_t> add(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
+    std::vector<uint32_t> result_number;
+
+    uint8_t carry = 0;
+    for (size_t i = 0; i < num1.size() || i < num2.size() || carry; i++) {
+        uint32_t sum = (num1.size() > i ? num1[i] : 0) +
+                       (num2.size() > i ? num2[i] : 0) + carry;
+        carry = sum / BASE;
+        sum %= BASE;
+        result_number.push_back(sum);
+    }
+
+    return result_number;
+}
+
+std::vector<uint32_t> sub(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
+    std::vector<uint32_t> result_number;
+
+    uint8_t carry = 0;
+    for (size_t i = 0; i < num1.size() || carry; i++) {
+        auto sum = static_cast<int32_t>(num1[i] - (num2.size() > i ? num2[i] : 0) - carry);
+        carry = sum < 0;
+        sum += static_cast<int32_t>(carry * BASE);
+        result_number.push_back(sum);
+    }
+
+    while (result_number.size() > 1 && result_number.back() == 0)
+        result_number.pop_back();
+
+    return result_number;
+}
+
+std::vector<uint32_t> mul(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
+    std::vector<uint32_t> result_number;
+
+    for (size_t i = 0; i < num1.size(); i++) {
+        uint64_t carry = 0;
+        for (size_t j = 0; j < num2.size() || carry; j++) {
+            uint64_t sum = static_cast<uint64_t>(result_number.size() > i + j ? result_number[i + j] : 0) +
+                           static_cast<uint64_t>(num1[i]) * (j < num2.size() ? num2[j] : 0) + carry;
+            carry = sum / BASE;
+            sum %= BASE;
+            if (result_number.size() > i + j)
+                result_number[i + j] = sum;
+            else
+                result_number.push_back(sum);
+        }
+    }
+
+    while (result_number.size() > 1 && result_number.back() == 0)
+        result_number.pop_back();
+
+    return result_number;
+}
+
 template <int32_t max_digits>
 class MPInt {
 private:
@@ -36,38 +91,6 @@ private:
             if (str_num.length() > max_digits % MAX_DIGITS)
                 throw std::overflow_error("Number " + toString() + " is too big for " + std::to_string(max_digits) + " digits");
         }
-    }
-
-    std::vector<uint32_t> add(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
-        std::vector<uint32_t> result_number;
-
-        uint8_t carry = 0;
-        for (size_t i = 0; i < num1.size() || i < num2.size() || carry; i++) {
-            uint32_t sum = (num1.size() > i ? num1[i] : 0) +
-                           (num2.size() > i ? num2[i] : 0) + carry;
-            carry = sum / BASE;
-            sum %= BASE;
-            result_number.push_back(sum);
-        }
-
-        return result_number;
-    }
-
-    std::vector<uint32_t> sub(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
-        std::vector<uint32_t> result_number;
-
-        uint8_t carry = 0;
-        for (size_t i = 0; i < num1.size() || carry; i++) {
-            auto sum = static_cast<int32_t>(num1[i] - (num2.size() > i ? num2[i] : 0) - carry);
-            carry = sum < 0;
-            sum += static_cast<int32_t>(carry * BASE);
-            result_number.push_back(sum);
-        }
-
-        while (result_number.size() > 1 && result_number.back() == 0)
-            result_number.pop_back();
-
-        return result_number;
     }
 
 public:
@@ -144,6 +167,21 @@ public:
     }
 
     template<int32_t max_digits_other>
+    MPInt<MaxDigits<max_digits, max_digits_other>::value> operator*(const MPInt<max_digits_other> &other) {
+        return {mul(mNumber, other.getNumber()), mSign * other.getSign()};
+    }
+
+    template<int32_t max_digits_other>
+    MPInt operator*=(const MPInt<max_digits_other> &other) {
+        auto result = *this + other;
+        if (MaxDigits<max_digits, max_digits_other>::value != max_digits)
+            throw std::overflow_error("Number " + result.toString() + " is too big for " + std::to_string(max_digits) + " digits");
+        mNumber = result.getNumber();
+        mSign = result.getSign();
+        return *this;
+    }
+
+    template<int32_t max_digits_other>
     std::strong_ordering operator<=>(const MPInt<max_digits_other> &other) const {
         if (mSign != other.getSign())
             return mSign <=> other.getSign();
@@ -189,10 +227,6 @@ public:
 
     int32_t getSign() const {
         return mSign;
-    }
-
-    void setSign(int32_t sign) {
-        mSign = sign;
     }
 
 };
