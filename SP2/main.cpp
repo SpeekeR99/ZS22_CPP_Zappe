@@ -1,14 +1,20 @@
 #include "MultiplePrecisionArithmetic.h"
 
 int main() {
-    MPInt<UNLIMITED> cislo3("2");
-    MPInt<UNLIMITED> cislo4("3");
-    cislo3 *= cislo4;
-//    auto vysledek2 = cislo3 / cislo4;
+    MPInt<20> cislo3("11");
+    MPInt<50> cislo4("300520210");
+
+    auto vysledek2 = cislo3 - cislo4;
+    try {
+        cislo3 -= cislo4;
+    }
+    catch (MyOverflowException &e) {
+        std::cout << e.what() << std::endl;
+    }
 
     std::cout << cislo3 << std::endl;
     std::cout << cislo4 << std::endl;
-//    std::cout << vysledek2 << std::endl;
+    std::cout << vysledek2 << std::endl;
 
     MPInt<50> cislo1("100");
     try {
