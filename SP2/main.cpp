@@ -1,6 +1,12 @@
 #include "MultiplePrecisionArithmetic.h"
 #include "MultiplePrecisionTerminal.h"
 
+/**
+ * Main function for the Multiple Precision Calculator
+ * @param argc Argument count (2 are expected)
+ * @param argv Argument vector (argv[1] is the mode: "unlimited", "limited to 32 bytes", "demonstration")
+ * @return 0 if the program exits normally, 1 if the program exits with an error
+ */
 int main(int argc, char** argv) {
     // Check the number of arguments
     if (argc != 2) {

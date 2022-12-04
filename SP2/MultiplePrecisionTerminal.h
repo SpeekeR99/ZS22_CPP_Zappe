@@ -4,11 +4,21 @@
 #include <regex>
 #include "MultiplePrecisionArithmetic.h"
 
+/**
+ * Terminal for the Multiple Precision Calculator
+ * @tparam max_digits Maximum number of digits for the numbers
+ */
 template<int32_t max_digits>
 class MPTerm {
 private:
+    /**
+     * Bank of last five results
+     */
     std::array<MPInt<max_digits>, 5> bank;
 
+    /**
+     * Prints the initial information message
+     */
     void printInitialMessage() {
         std::cout << "Multiple Precision Calculator" << std::endl;
         if (max_digits == UNLIMITED)
@@ -19,6 +29,9 @@ private:
         std::cout << "Enter your expression with upmost one operator" << std::endl;
     }
 
+    /**
+     * Prints the help message
+     */
     void printHelp() {
         std::cout << "--------------------------------------" << std::endl;
         std::cout << "| Available commands:                 |" << std::endl;
@@ -35,105 +48,148 @@ private:
         std::cout << "--------------------------------------" << std::endl;
     }
 
+    /**
+     * Parses the input and checks for help or bank commands
+     * @param input Input string
+     * @return True if the input is a command, false otherwise
+     */
+    bool parseCommand(std::string &input) {
+        // If the user wants help, print help message
+        if (input == "help" || input == "HELP") {
+            printHelp();
+            return true;
+        }
+            // If the user wants to see the bank, print it
+        else if (input == "bank" || input == "BANK") {
+            std::cout << "Bank: " << std::endl;
+            for (int i = 0; i < 5; i++)
+                std::cout << "$" << (i + 1) << " = " << bank[i] << std::endl;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Parses the input expression and calls the appropriate function to compute the result
+     * @param input Input string
+     */
+    void parseExpression(std::string &input) {
+        // Possible two formats are:
+        std::regex regex1(R"(^(\$[1-5]|(\-?\d+))(\s+)*(\+|\-|\*|\/)(\s+)*(\$[1-5]|(\-?\d+))$)");
+        std::regex regex2(R"(^(\$[1-5]|(\-?\d+))(\s+)*(\!)$)");
+
+        // If the input matches no format, print error message
+        if (!std::regex_match(input, regex1) && !std::regex_match(input, regex2)) {
+            std::cerr << "Invalid input" << std::endl;
+            return;
+        }
+
+        MPInt<max_digits> result;
+        // If the input matches the first format, parse it
+        // Get the first number
+        std::smatch match;
+        std::regex_search(input, match, std::regex(R"(^(\$[1-5]|(\-?\d+)))"));
+        std::string number1 = match.str();
+        input = match.suffix();
+
+        // Get the operator
+        std::regex_search(input, match, std::regex(R"((\+|\-|\*|\/|\!))"));
+        std::string op = match.str();
+        input = match.suffix();
+
+        std::string number2 = "0";
+        if (op != "!") {
+            // Get the second number
+            std::regex_search(input, match, std::regex(R"((\$[1-5]|(\-?\d+))$)"));
+            number2 = match.str();
+        }
+        // Parse the numbers
+        MPInt<max_digits> num1, num2;
+        if (number1[0] == '$')
+            num1 = bank[number1[1] - '1'];
+        else
+            num1 = MPInt<max_digits>(number1);
+        if (number2[0] == '$')
+            num2 = bank[number2[1] - '1'];
+        else
+            num2 = MPInt<max_digits>(number2);
+
+        // Try to perform the operation
+        if (!performOperation(num1, num2, op, result))
+            return;
+
+        // Print the result
+        std::cout << result << std::endl;
+
+        // Update the bank
+        for (int i = 4; i > 0; i--)
+            bank[i] = bank[i - 1];
+        bank[0] = result;
+    }
+
+    /**
+     * Tries to perform the operation
+     * @param num1 Operand 1
+     * @param num2 Operand 2
+     * @param op Operator
+     * @param result Result of the operation (if successful)
+     * @return True if the operation was successful, false otherwise
+     */
+    bool performOperation(MPInt<max_digits> &num1, MPInt<max_digits> &num2, const std::string &op,
+                          MPInt<max_digits> &result) {
+        try {
+            if (op == "+")
+                result = num1 + num2;
+            else if (op == "-")
+                result = num1 - num2;
+            else if (op == "*")
+                result = num1 * num2;
+            else if (op == "/")
+                result = num1 / num2;
+            else if (op == "!")
+                result = !num1;
+        }
+            // Catch overflow exception
+        catch (MyOverflowException &e) {
+            std::cerr << e.what() << std::endl;
+            return false;
+        }
+            // Catch general exception (division by zero and unexpected errors)
+        catch (std::exception &e) {
+            std::cerr << e.what() << std::endl;
+            return false;
+        }
+        return true;
+    }
+
 public:
+    /**
+     * Constructor for the terminal
+     */
     MPTerm() : bank{} {
         printInitialMessage();
     }
 
+    /**
+     * Runs the terminal
+     */
     void run() {
-        while(true) {
+        while (true) {
             // Get user input
             std::string input;
             std::cout << "> ";
             std::getline(std::cin, input);
 
-            // If the user wants help, print help message
-            if (input == "help" || input == "HELP") {
-                printHelp();
-                continue;
-            }
-
             // If the user wants to exit, exit
-            else if (input == "exit" || input == "EXIT")
+            if (input == "exit" || input == "EXIT")
                 break;
 
-            // If the user wants to see the bank, print it
-            else if (input == "bank" || input == "BANK") {
-                std::cout << "Bank: " << std::endl;
-                for (int i = 0; i < 5; i++)
-                    std::cout << "$" << (i + 1) << " = " << bank[i] << std::endl;
+            // Check for help or bank commands
+            if (parseCommand(input))
                 continue;
-            }
 
-            // Parse the input, possible formats:
-            std::regex regex1(R"(^(\$[1-5]|\d+)(\s+)*(\+|\-|\*|\/)(\s+)*(\$[1-5]|\d+)$)");
-            std::regex regex2(R"(^(\$[1-5]|\d+)(\s+)*(\!)$)");
-
-            // If the input matches no format, print error message
-            if (!std::regex_match(input, regex1) && !std::regex_match(input, regex2)) {
-                std::cerr << "Invalid input" << std::endl;
-                continue;
-            }
-
-            MPInt<max_digits> result;
-            // If the input matches the first format, parse it
-            // Get the first number
-            std::smatch match;
-            std::regex_search(input, match, std::regex(R"(^(\$[1-5]|\d+))"));
-            std::string number1 = match.str();
-
-            // Get the operator
-            std::regex_search(input, match, std::regex(R"((\+|\-|\*|\/|\!))"));
-            std::string op = match.str();
-
-            std::string number2 = "0";
-            if (op != "!") {
-                // Get the second number
-                std::regex_search(input, match, std::regex(R"((\$[1-5]|\d+)$)"));
-                number2 = match.str();
-            }
-            // Parse the numbers
-            MPInt<max_digits> num1, num2;
-            if (number1[0] == '$')
-                num1 = bank[number1[1] - '1'];
-            else
-                num1 = MPInt<max_digits>(number1);
-            if (number2[0] == '$')
-                num2 = bank[number2[1] - '1'];
-            else
-                num2 = MPInt<max_digits>(number2);
-
-            // Try to perform the operation
-            try {
-                if (op == "+")
-                    result = num1 + num2;
-                else if (op == "-")
-                    result = num1 - num2;
-                else if (op == "*")
-                    result = num1 * num2;
-                else if (op == "/")
-                    result = num1 / num2;
-                else if (op == "!")
-                    result = !num1;
-            }
-            // Catch overflow exception
-            catch (MyOverflowException &e) {
-                std::cerr << e.what() << std::endl;
-                continue;
-            }
-            // Catch general exception (division by zero and unexpected errors)
-            catch (std::exception &e) {
-                std::cerr << e.what() << std::endl;
-                continue;
-            }
-
-            // Print the result
-            std::cout << result << std::endl;
-
-            // Update the bank
-            for (int i = 4; i > 0; i--)
-                bank[i] = bank[i - 1];
-            bank[0] = result;
+            // Parse the input expression
+            parseExpression(input);
         }
 
         std::cout << "Exiting..." << std::endl;
