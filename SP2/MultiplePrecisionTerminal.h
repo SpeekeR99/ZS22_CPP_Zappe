@@ -2,6 +2,7 @@
 
 #include <array>
 #include <regex>
+#include <chrono>
 #include "MultiplePrecisionArithmetic.h"
 
 /**
@@ -62,8 +63,11 @@ private:
             // If the user wants to see the bank, print it
         else if (input == "bank" || input == "BANK") {
             std::cout << "Bank: " << std::endl;
-            for (int i = 0; i < 5; i++)
-                std::cout << "$" << (i + 1) << " = " << bank[i] << std::endl;
+            size_t i = 1;
+            std::for_each(bank.begin(), bank.end(), [&i](MPInt<max_digits> &n) { // Lambda function
+                std::cout << "$" << i << " = " << n << std::endl;
+                i++;
+            });
             return true;
         }
         return false;
@@ -119,7 +123,7 @@ private:
             return;
 
         // Print the result
-        std::cout << result << std::endl;
+        std::cout << "$1 = " << result << std::endl;
 
         // Update the bank
         for (int i = 4; i > 0; i--)
