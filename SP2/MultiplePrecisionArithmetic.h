@@ -276,6 +276,10 @@ private:
     }
 
 public:
+    MPInt() : mNumber(1, 0), mSign(1) {
+        // Nothing to do here :)
+    }
+
     /**
      * Constructor for the MPInt class based on a given string
      * @param num Number as a string (can be negative)
@@ -542,17 +546,21 @@ public:
      */
     template<int32_t max_digits_other>
     std::strong_ordering operator<=>(const MPInt<max_digits_other> &other) const {
+        // Compare the signs
         if (mSign != other.getSign())
             return mSign <=> other.getSign();
 
+        // Compare the sizes of the number vectors
         if (mNumber.size() != other.getNumber().size())
             return mNumber.size() <=> other.getNumber().size();
 
+        // Compare the digits of the numbers
         for (int32_t i = mNumber.size() - 1; i >= 0; i--) {
             if (mNumber[i] != other.getNumber()[i])
                 return mNumber[i] <=> other.getNumber()[i];
         }
 
+        // The numbers are equal
         return std::strong_ordering::equal;
     }
 
@@ -586,12 +594,14 @@ public:
      */
     [[nodiscard]] std::string toString() const {
         std::stringstream result;
+        // If the number is negative, add a minus sign
         if (mSign == -1)
             result << "-";
+        // Add the digits of the number from the most significant digit to the least significant digit
         result << mNumber[mNumber.size() - 1];
         for (int32_t i = static_cast<int32_t>(mNumber.size()) - 2; i >= 0; i--) {
             std::string str_num = std::to_string(mNumber[i]);
-            for (int32_t j = 0; j < MAX_DIGITS - str_num.length(); j++) // "non leading" zeros
+            for (int32_t j = 0; j < MAX_DIGITS - str_num.length(); j++) // Add leading zeros
                 result << "0";
             result << str_num;
         }

@@ -1,28 +1,26 @@
 #include "MultiplePrecisionArithmetic.h"
+#include "MultiplePrecisionTerminal.h"
 
-int main() {
-    MPInt<20> cislo3("11");
-    MPInt<50> cislo4("300520210");
-
-    auto vysledek2 = cislo3 - cislo4;
-    try {
-        cislo3 -= cislo4;
-    }
-    catch (MyOverflowException &e) {
-        std::cout << e.what() << std::endl;
+int main(int argc, char** argv) {
+    // Check the number of arguments
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " <mode>" << std::endl;
+        return EXIT_FAILURE;
     }
 
-    std::cout << cislo3 << std::endl;
-    std::cout << cislo4 << std::endl;
-    std::cout << vysledek2 << std::endl;
-
-    MPInt<50> cislo1("100");
-    try {
-        auto factorial = (!cislo1);
-        std::cout << factorial << std::endl;
-    } catch (MyOverflowException &e) {
-        std::cout << e.what() << std::endl;
+    // Three modes are possible: 1 for unlimited precision, 2 for limited precision (32 bytes), 3 for demonstration mode
+    uint8_t mode = std::stoi(argv[1]);
+    if (mode == 1) {
+        MPTerm<UNLIMITED> terminal;
+        terminal.run();
+    }
+    else if (mode == 2) {
+        MPTerm<78> terminal; // 32 bytes = 256 bits ~ 78 digits
+        terminal.run();
+    }
+    else if (mode == 3) {
+        std::cout << "Demonstration mode" << std::endl;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
