@@ -34,19 +34,19 @@ private:
      * Prints the help message
      */
     void printHelp() {
-        std::cout << "--------------------------------------" << std::endl;
+        std::cout << "---------------------------------------" << std::endl;
         std::cout << "| Available commands:                 |" << std::endl;
         std::cout << "| help | prints this message          |" << std::endl;
         std::cout << "| exit | exits the program            |" << std::endl;
         std::cout << "| bank | shows the last five results  |" << std::endl;
         std::cout << "|- - - - - - - - - - - - - - - - - - -|" << std::endl;
         std::cout << "| Available operators:                |" << std::endl;
-        std::cout << "| + | addition                        |" << std::endl;
-        std::cout << "| - | subtraction                     |" << std::endl;
-        std::cout << "| * | multiplication                  |" << std::endl;
-        std::cout << "| / | division                        |" << std::endl;
-        std::cout << "| ! | factorial                       |" << std::endl;
-        std::cout << "--------------------------------------" << std::endl;
+        std::cout << "| + | addition       | (binary)       |" << std::endl;
+        std::cout << "| - | subtraction    | (binary)       |" << std::endl;
+        std::cout << "| * | multiplication | (binary)       |" << std::endl;
+        std::cout << "| / | division       | (binary)       |" << std::endl;
+        std::cout << "| ! | factorial      | (unary)        |" << std::endl;
+        std::cout << "---------------------------------------" << std::endl;
     }
 
     /**
