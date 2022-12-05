@@ -6,6 +6,7 @@
 #include <cstring>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 /**
  * Base 1 000 000 000 was chosen because it is the largest base that can be stored in 32 bits
@@ -150,18 +151,21 @@ std::vector<uint32_t> mul(const std::vector<uint32_t> &num1, const std::vector<u
  * @param num2 Number to divide by
  * @return Vector of digits representing the quotient of num1 and num2
  */
-std::vector<uint32_t> div(const std::vector<uint32_t> &num1, uint32_t num2) {
+std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const uint32_t num2) {
     std::vector<uint32_t> result_number;
 
-    uint8_t carry = 0;
+    uint64_t carry = 0;
     for (int32_t i = static_cast<int32_t>(num1.size()) - 1; i >= 0; i--) {
         // Since the num1 is always greater than num2, we can assume that num1 has a digit at index i (always)
-        uint64_t sum = static_cast<uint64_t>(num1[i]) + carry * BASE;
+        uint64_t sum = num1[i] + carry * BASE;
         // Result is the integer part of the sum divided by the divisor
         result_number.push_back(sum / num2);
         // Carry is the remainder of the sum divided by the divisor
         carry = sum % num2;
     }
+
+    // Reverse the result
+    std::reverse(result_number.begin(), result_number.end());
 
     // Remove the leading zeros from the result
     while (result_number.size() > 1 && result_number.back() == 0)
@@ -178,10 +182,61 @@ std::vector<uint32_t> div(const std::vector<uint32_t> &num1, uint32_t num2) {
  * @return Vector of digits representing the quotient of num1 and num2
  */
 std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
-    std::vector<uint32_t> result_number;
+    std::vector<uint32_t> zero{0};
+    auto num1_reversed{num1};
+    std::reverse(num1_reversed.begin(), num1_reversed.end());
 
-    throw std::runtime_error("Not implemented");
+    auto quick_divisor = num2.back();
+    auto throw_away = num2.size() - 1;
 
+    std::vector<uint32_t> quotient{0};
+    std::vector<uint32_t> remainder;
+    auto dividend{num1};
+    bool is_negative = false;
+
+    do {
+        for (size_t i = 0; i < throw_away; i++)
+            dividend.erase(dividend.begin());
+
+        if (!is_negative)
+            quotient = add(quotient, div(dividend, quick_divisor));
+        else
+            quotient = sub(quotient, div(dividend, quick_divisor));
+        auto mul_product = mul(quotient, num2);
+        auto mul_product_reversed{mul_product};
+        std::reverse(mul_product_reversed.begin(), mul_product_reversed.end());
+        if (num1_reversed >= mul_product_reversed) {
+            is_negative = false;
+            remainder = sub(num1, mul_product);
+        }
+        else {
+            is_negative = true;
+            remainder = sub(mul_product, num1);
+        }
+        dividend = remainder;
+    } while ([remainder, num2]() -> bool {
+        if (remainder.size() > num2.size())
+            return true;
+        else if (remainder.size() < num2.size())
+            return false;
+        else {
+            bool result = true;
+            for (int32_t i = 0; i < remainder.size(); i++) {
+                if (remainder[i] < num2[i] || (remainder[i] == 0 && i < remainder.size() - 1))
+                    result = false;
+            }
+            return result;
+        }
+    }());
+
+    remainder = sub(num1, mul(quotient, num2));
+    if (remainder >= zero)
+        return quotient;
+
+    sub(quotient, {1});
+    return quotient;
+    // 555555555555555555555555555/1111111111111111111 = 500 000 000
+    // 987654321123456789/12345678987654321 = 80
 }
 
 /**
@@ -544,7 +599,21 @@ public:
             throw std::invalid_argument("Division by zero is not defined");
 
         // Check if the result is zero (numerator is smaller than denominator)
-        if (mNumber < other.getNumber())
+        if (mNumber == zero || [this, &other]() -> bool { // Lambda function to flex... weird flex, but okay
+            if (mNumber.size() < other.getNumber().size())
+                return true;
+            else if (mNumber.size() > other.getNumber().size())
+                return false;
+            else {
+                for (int32_t i = mNumber.size() - 1; i >= 0; i--) {
+                    if (mNumber[i] < other.getNumber()[i])
+                        return true;
+                    else if (mNumber[i] > other.getNumber()[i])
+                        return false;
+                }
+                return false;
+            }
+        }())
             return {{0}, 1};
             // Check if the result is one or minus one
         else if (getNumber() == other.getNumber())
@@ -552,8 +621,12 @@ public:
             // Check if the result is the numerator (or -numerator)
         else if (other.getNumber() == one)
             return {{mNumber}, mSign * other.getSign()};
+
         // Divide
-        return {div(mNumber, other.getNumber()), mSign * other.getSign()};
+        if (other.getNumber().size() == 1) // Small division
+            return {div(mNumber, other.getNumber()[0]), mSign * other.getSign()};
+        else // Large division
+            return {div(mNumber, other.getNumber()), mSign * other.getSign()};
     }
 
     /**
@@ -602,13 +675,21 @@ public:
             return mSign <=> other.getSign();
 
         // Compare the sizes of the number vectors
-        if (mNumber.size() != other.getNumber().size())
-            return mNumber.size() <=> other.getNumber().size();
+        if (mNumber.size() != other.getNumber().size()) {
+            if (mSign == 1)
+                return mNumber.size() <=> other.getNumber().size();
+            else
+                return other.getNumber().size() <=> mNumber.size();
+        }
 
         // Compare the digits of the numbers
         for (int32_t i = mNumber.size() - 1; i >= 0; i--) {
-            if (mNumber[i] != other.getNumber()[i])
-                return mNumber[i] <=> other.getNumber()[i];
+            if (mNumber[i] != other.getNumber()[i]) {
+                if (mSign == 1)
+                    return mNumber[i] <=> other.getNumber()[i];
+                else
+                    return other.getNumber()[i] <=> mNumber[i];
+            }
         }
 
         // The numbers are equal
@@ -650,7 +731,7 @@ public:
             result << "-";
         // Add the digits of the number from the most significant digit to the least significant digit
         result << mNumber[mNumber.size() - 1];
-        for (int32_t i = static_cast<int32_t>(mNumber.size()) - 2; i >= 0; i--) {
+        for (int32_t i = mNumber.size() - 2; i >= 0; i--) {
             std::string str_num = std::to_string(mNumber[i]);
             for (int32_t j = 0; j < MAX_DIGITS - str_num.length(); j++) // Add leading zeros
                 result << "0";

@@ -22,7 +22,7 @@ void demonstrate() {
     std::string negative = "-1--1\n1+-1\n-5*5\n-5*-5\n$1/-5\nbank\nexit\n";
     std::stringstream negative_ss(negative);
     // Demonstration of invalid inputs on maximum of 10 digits
-    std::string invalid = "1+1+1\n-1-*1\n-1--1--1\n1/0\n-1!\n1!1\n:)\nbank\nexit\n";
+    std::string invalid = "1+1+1\n-1-*1\n-1---1\n1+\n1!1\n1/0\n-1!\n:)\nbank\nexit\n";
     std::stringstream invalid_ss(invalid);
     // Demonstration of overflow on maximum of 3 digits (-999 to 999)
     std::string overflow = "-998-1\n$1-1\n998+1\n$1+1\nbank\nexit\n";
@@ -31,7 +31,7 @@ void demonstrate() {
     std::string factorial = "-1!\n0!\n1!\n5!\n$1!\n1000!\nexit\n";
     std::stringstream factorial_ss(factorial);
     // Demonstration of large random numbers in unlimited mode
-    std::string large = "1234567890123456789*98765432109876543210\n$1*-420\n$2-$1\n$3/$2\n$4--$1\nbank\nexit\n";
+    std::string large = "1234567890123456789*98765432109876543210\n$1*-420\n$2-$1\n$3/$2\n$4+$1\n120!\n100!\n$2/$1\nbank\nexit\n";
     std::stringstream large_ss(large);
 
     // Prepare terminals

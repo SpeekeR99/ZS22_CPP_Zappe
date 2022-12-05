@@ -158,7 +158,12 @@ private:
             std::cout << e.what() << std::endl;
             return false;
         }
-            // Catch general exception (division by zero and unexpected errors)
+            // Catch division by zero, negative number factorial
+        catch (std::invalid_argument &e) {
+            std::cout << e.what() << std::endl;
+            return false;
+        }
+            // Catch unexpected exception
         catch (std::exception &e) {
             std::cout << e.what() << std::endl;
             return false;
