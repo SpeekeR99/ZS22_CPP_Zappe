@@ -180,6 +180,8 @@ std::vector<uint32_t> div(const std::vector<uint32_t> &num1, uint32_t num2) {
 std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
     std::vector<uint32_t> result_number;
 
+    throw std::runtime_error("Not implemented");
+
 }
 
 /**
@@ -262,8 +264,8 @@ private:
      * Factorial is simply created by multiplying the number by all the numbers below it
      * @return Factorial of the number
      */
-    MPInt factorial() const {
-        MPInt result("1");
+    [[nodiscard]] MPInt factorial() const {
+        MPInt<UNLIMITED> result("1");
         uint32_t i = 2;
         while (true) {
             MPInt temp(std::to_string(i));
@@ -272,7 +274,8 @@ private:
             result *= temp;
             i++;
         }
-        return result;
+        MPInt check_digits{result.toString()};
+        return check_digits;
     }
 
 public:
@@ -292,6 +295,10 @@ public:
             mSign = -1;
             num_copy = num.substr(1);
         }
+
+        // Remove non-leading zeros from the number
+        while (num_copy.length() > 1 && num_copy[0] == '0')
+            num_copy = num_copy.substr(1);
 
         // Go through the number from the least significant digit to the most significant digit
         for (auto i = static_cast<int32_t>(num_copy.length()); i > 0; i -= MAX_DIGITS) {
@@ -426,14 +433,18 @@ public:
      */
     template<int32_t max_digits_other>
     MPInt<MaxDigits<max_digits, max_digits_other>::value> operator-(const MPInt<max_digits_other> &other) {
-        // +x + +y OR -x + -y -> Subtraction (with the same sign)
+        // Check if the two numbers are the same with different signs
+        if (mNumber == other.getNumber() && mSign == other.getSign())
+            return {{0}, 1}; // To avoid negative zero
+
+        // +x - +y OR -x - -y -> Subtraction (with the same sign)
         if (mSign == other.getSign()) {
-            if (*this >= other)
+            if (*this > other)
                 return {sub(mNumber, other.getNumber()), mSign};
             else
-                return {sub(other.getNumber(), mNumber), -mSign};
+                return {sub(mNumber, other.getNumber()), -mSign};
         }
-            // +x + -y OR -x + +y -> Addition (but swap sign of the second operand)
+            // +x - -y OR -x - +y -> Addition (but swap sign of the second operand)
         else {
             MPInt<max_digits_other> tmp{other.getNumber(), -other.getSign()};
             return *this + tmp;
@@ -471,6 +482,26 @@ public:
      */
     template<int32_t max_digits_other>
     MPInt<MaxDigits<max_digits, max_digits_other>::value> operator*(const MPInt<max_digits_other> &other) {
+        std::vector<uint32_t> zero{0};
+        std::vector<uint32_t> one{1};
+
+        // Check if one of the numbers is zero
+        if (mNumber == zero || other.getNumber() == zero)
+            return {{0}, 1};
+
+            // Check if one of the numbers is one
+        else if (mNumber == one && mSign == 1)
+            return {other.getNumber(), other.getSign()};
+        else if (other.getNumber() == one && other.getSign() == 1)
+            return {mNumber, mSign};
+
+            // Check if one of the numbers is minus one
+        else if (mNumber == one && mSign == -1)
+            return {other.getNumber(), -other.getSign()};
+        else if (other.getNumber() == one && other.getSign() == -1)
+            return {mNumber, -mSign};
+
+        // Multiply
         return {mul(mNumber, other.getNumber()), mSign * other.getSign()};
     }
 
@@ -505,7 +536,23 @@ public:
      */
     template<int32_t max_digits_other>
     MPInt<MaxDigits<max_digits, max_digits_other>::value> operator/(const MPInt<max_digits_other> &other) {
-        throw MyOverflowException("Division is not implemented");
+        std::vector<uint32_t> zero{0};
+        std::vector<uint32_t> one{1};
+
+        // Check if the other number is zero
+        if (other.getNumber() == zero)
+            throw std::invalid_argument("Division by zero is not defined");
+
+        // Check if the result is zero (numerator is smaller than denominator)
+        if (mNumber < other.getNumber())
+            return {{0}, 1};
+            // Check if the result is one or minus one
+        else if (getNumber() == other.getNumber())
+            return {{1}, mSign * other.getSign()};
+            // Check if the result is the numerator (or -numerator)
+        else if (other.getNumber() == one)
+            return {{mNumber}, mSign * other.getSign()};
+        // Divide
         return {div(mNumber, other.getNumber()), mSign * other.getSign()};
     }
 
@@ -532,6 +579,10 @@ public:
      * @return Factorial of the MPInt instance with the same number of digits as this MPInt instance
      */
     MPInt operator!() {
+        if (mSign == -1)
+            throw std::invalid_argument("Factorial of a negative number is not defined");
+        if (mNumber[0] == 0)
+            return MPInt{{1}, 1};
         return factorial();
     }
 

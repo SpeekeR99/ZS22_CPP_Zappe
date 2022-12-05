@@ -84,7 +84,7 @@ private:
 
         // If the input matches no format, print error message
         if (!std::regex_match(input, regex1) && !std::regex_match(input, regex2)) {
-            std::cerr << "Invalid input" << std::endl;
+            std::cout << "Invalid input" << std::endl;
             return;
         }
 
@@ -155,12 +155,12 @@ private:
         }
             // Catch overflow exception
         catch (MyOverflowException &e) {
-            std::cerr << e.what() << std::endl;
+            std::cout << e.what() << std::endl;
             return false;
         }
             // Catch general exception (division by zero and unexpected errors)
         catch (std::exception &e) {
-            std::cerr << e.what() << std::endl;
+            std::cout << e.what() << std::endl;
             return false;
         }
         return true;
@@ -171,18 +171,26 @@ public:
      * Constructor for the terminal
      */
     MPTerm() : bank{} {
-        printInitialMessage();
+        // Nothing to do here :)
     }
 
     /**
      * Runs the terminal
+     * Infinite loop of reading input and parsing it
+     * @param in Input stream (default: std::cin) (for demonstration mode purposes)
+     * @param demonstration If true, the terminal will output the input differently
      */
-    void run() {
+    void run(std::istream &in = std::cin, bool demonstration = false) {
+        printInitialMessage();
+
         while (true) {
             // Get user input
             std::string input;
-            std::cout << "> ";
-            std::getline(std::cin, input);
+            if (!demonstration)
+                std::cout << "> ";
+            std::getline(in, input);
+            if (demonstration)
+                std::cout << "> " << input << std::endl;
 
             // If the user wants to exit, exit
             if (input == "exit" || input == "EXIT")
