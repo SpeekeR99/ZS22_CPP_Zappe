@@ -8,8 +8,9 @@
  * Third demonstration is about negative numbers, parsing them and calculations on maximum of 10 digits
  * Fourth demonstration is about invalid inputs on maximum of 10 digits
  * Fifth demonstration is about overflow on maximum of 3 digits (-999 to 999)
- * Sixth demonstration is about factorials in unlimited mode
- * Seventh demonstration is about large random numbers in unlimited mode
+ * Sixth demonstration is about division in unlimited mode
+ * Seventh demonstration is about factorials in unlimited mode
+ * Eighth demonstration is about large random numbers in unlimited mode
  */
 void demonstrate() {
     // Demonstration of basic calculations on maximum of 10 digits
@@ -27,6 +28,11 @@ void demonstrate() {
     // Demonstration of overflow on maximum of 3 digits (-999 to 999)
     std::string overflow = "-998-1\n$1-1\n998+1\n$1+1\nbank\nexit\n";
     std::stringstream overflow_ss(overflow);
+    // Demonstration of division in unlimited mode
+    std::string division = "0/9999999999999999999\n123456789/123456789\n123456789/-123465789\n-123456789/-1\n"
+                           "1000000000000000000000000000000/555555555555555555555555\n555555555555555555555555555/1111111111111111111\n"
+                           "987654321123456789/12345678987654321\n9876543210123456789/12345678987654321\nbank\nexit\n";
+    std::stringstream division_ss(division);
     // Demonstration of factorials in unlimited mode
     std::string factorial = "-1!\n0!\n1!\n5!\n$1!\n1000!\nexit\n";
     std::stringstream factorial_ss(factorial);
@@ -42,6 +48,7 @@ void demonstrate() {
     MPTerm<10> term_10_4;
     MPTerm<UNLIMITED> term_unlimited_1;
     MPTerm<UNLIMITED> term_unlimited_2;
+    MPTerm<UNLIMITED> term_unlimited_3;
 
     std::cout << "Demonstration of the Multiple Precision Calculator" << std::endl;
 
@@ -70,15 +77,20 @@ void demonstrate() {
     std::cout << "-----------------------------------------------" << std::endl << std::endl;
     term_3.run(overflow_ss, true);
 
+    std::cout << std::endl << "---------------------------------------------" << std::endl;
+    std::cout << "Let's demonstrate division in unlimited mode:" << std::endl;
+    std::cout << "---------------------------------------------" << std::endl << std::endl;
+    term_unlimited_1.run(division_ss, true);
+
     std::cout << std::endl << "--------------------------------------------------------" << std::endl;
     std::cout << "Let's demonstrate factorial on unlimited maximum digits:" << std::endl;
     std::cout << "--------------------------------------------------------" << std::endl << std::endl;
-    term_unlimited_1.run(factorial_ss, true);
+    term_unlimited_2.run(factorial_ss, true);
 
     std::cout << std::endl << "------------------------------------------------------------" << std::endl;
     std::cout << "Let's demonstrate large numbers on unlimited maximum digits:" << std::endl;
     std::cout << "------------------------------------------------------------" << std::endl << std::endl;
-    term_unlimited_2.run(large_ss, true);
+    term_unlimited_3.run(large_ss, true);
 }
 
 /**

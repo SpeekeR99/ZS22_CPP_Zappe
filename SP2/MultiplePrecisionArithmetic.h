@@ -176,93 +176,87 @@ std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const uint32_t num2
 
 /**
  * Division of two arbitrary precision integers is the most complex operation of them all
- * TODO: Implement this
+ * Since the small division is already implemented, let's use that to implement the big division
+ * First, we find the most significant digit (in base 10 at most 9 digits) of the divisor
+ * Then, take away the same amount of digits (in the current BASE), that were taken away from the divisor,
+ * from the dividend
+ * Divide the dividend by the divisor and add the result to the result (quotient)
+ * Reverse check how off the quotient is and get the remainder this way
+ * The remainder is the new dividend
+ * Repeat until the remainder is greater than the ORIGINAL divisor
+ * Finally, check for off by one error by again reverse checking the quotient
+ * Inspiration taken from: https://youtu.be/6bpLYxk9TUQ
  * @param num1 Number to be divided
  * @param num2 Number to divide by
  * @return Vector of digits representing the quotient of num1 and num2
  */
 std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<uint32_t> &num2) {
-    std::vector<uint32_t> zero{0};
+    // Create a reversed copy of the input numbers (reversed numbers are used for comparisons)
     auto num1_reversed{num1};
+    auto num2_reversed{num2};
     std::reverse(num1_reversed.begin(), num1_reversed.end());
+    std::reverse(num2_reversed.begin(), num2_reversed.end());
 
+    // Take the most significant (at most 9) digits of divisor and convert it to an integer
+    // -> converting problem of big division to small division
     auto quick_divisor = num2.back();
+    // Throw away the same number of "digits" (in the meaning of the BASE) from num1 (the least significant digits)
     auto throw_away = num2.size() - 1;
 
+    // Quotient is the result of the division
     std::vector<uint32_t> quotient{0};
-    std::vector<uint32_t> remainder;
+    // Remainder is the remainder of the division, remainder reversed is once again used for comparisons
+    std::vector<uint32_t> remainder_reversed;
+    // Dividend is the number that is being divided
     auto dividend{num1};
+    // This is used to check if the quotient is too big and the next quotient needs to be subtracted instead of added
+    // Since this representation of vectors is sign free (MPInt takes care of signs later)
     bool is_negative = false;
 
     do {
+        // Throw away the least significant digits of the dividend
         for (size_t i = 0; i < throw_away; i++)
             dividend.erase(dividend.begin());
 
+        // Add (or subtract) the dividend / quick divisor to (or from) the quotient
         if (!is_negative)
             quotient = add(quotient, div(dividend, quick_divisor));
         else
             quotient = sub(quotient, div(dividend, quick_divisor));
+
+        // Product is used to reverse check if the quotient is too big or too small
         auto mul_product = mul(quotient, num2);
+        // Product reversed is once again used for comparisons
         auto mul_product_reversed{mul_product};
         std::reverse(mul_product_reversed.begin(), mul_product_reversed.end());
+
+        // Remainder is the difference between the ORIGINAL dividend and the product
+        // The new dividend is the remainder, thus use dividend variable instead
         if (num1_reversed >= mul_product_reversed) {
             is_negative = false;
-            remainder = sub(num1, mul_product);
-        }
-        else {
+            dividend = sub(num1, mul_product); // num1 - mul_product
+        } else {
             is_negative = true;
-            remainder = sub(mul_product, num1);
+            dividend = sub(mul_product, num1); // - (num1 - mul_product)
         }
-        dividend = remainder;
-    } while ([remainder, num2]() -> bool {
-        if (remainder.size() > num2.size())
-            return true;
-        else if (remainder.size() < num2.size())
-            return false;
-        else {
-            bool result = true;
-            for (int32_t i = 0; i < remainder.size(); i++) {
-                std::string remainder_str = std::to_string(remainder[i]);
-                std::string num2_str = std::to_string(num2[i]);
-                if (i != remainder.size() - 1) {
-                    remainder_str += std::string(9 - remainder_str.size(), '0');
-                    num2_str += std::string(9 - num2_str.size(), '0');
-                }
-                else {
-                    if (remainder_str.size() < num2_str.size()) {
-                        result = false;
-                        break;
-                    }
-                }
-                if (remainder_str == "000000000" && i != remainder.size() - 1)
-                    continue;
-                bool first_zeros = true;
-                for (int32_t j = 0; j < remainder_str.size(); j++) {
-                    if (first_zeros && remainder_str[j] == '0')
-                        continue;
-                    else
-                        first_zeros = false;
-                    if (remainder_str[j] > num2_str[j])
-                        break;
-                    else if (remainder_str[j] < num2_str[j]) {
-                        result = false;
-                        break;
-                    }
-                }
-            }
-            return result;
-        }
-    }());
 
-    remainder = sub(num1, mul(quotient, num2));
-    if (remainder >= zero)
+        // Reversed remainder is once again used for comparisons (remainder is stored in dividend now)
+        remainder_reversed = dividend;
+        std::reverse(remainder_reversed.begin(), remainder_reversed.end());
+    } while (remainder_reversed >= num2_reversed); // Do this until the remainder is smaller than the ORIGINAL divisor
+
+    // Check for off by one error
+    auto mul_product = mul(quotient, num2);
+    auto mul_product_reversed{mul_product};
+    std::reverse(mul_product_reversed.begin(), mul_product_reversed.end());
+
+    // Check if the difference of num1 and product of quotient and num2 would be greater than zero
+    if (num1_reversed >= mul_product_reversed)
         return quotient;
 
-    sub(quotient, {1});
+    // Off by one error
+    quotient = sub(quotient, {1});
     return quotient;
-    // 555555555555555555555555555/1111111111111111111 = 500 000 000
-    // 987654321123456789/12345678987654321 = 80
-    // 9876543210123456789/12345678987654321 = 800
 }
 
 /**
