@@ -267,7 +267,7 @@ std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<u
             // If they are the same length, compare them char by char
             for (int32_t i = 0; i < remainder_str.length(); i++) {
                 if (remainder_str[i] > num2_str[i])
-                    continue;
+                    return true;
                 if (remainder_str[i] < num2_str[i])
                     return false;
             }
@@ -284,15 +284,13 @@ std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<u
 
                 // Strings can begin with multiple zeros (extreme "000000000" case), that is the biggest number, because
                 // they are leading zeros from the previous digit
-                bool first_zero = true;
+                if (remainder_str[0] == '0')
+                    return true;
                 // Compare the strings char by char
                 for (int8_t j = 0; j < MAX_DIGITS; j++) {
                     // If digit is zero or a sequence of zeros, continue
-                    if (first_zero && remainder_str[j] == '0')
-                        continue;
-                    first_zero = false; // First non-zero digit found, don't continue on zeros
                     if (remainder_str[j] > num2_str[j])
-                        continue;
+                        return true;
                     if (remainder_str[j] < num2_str[j])
                         return false;
                 }

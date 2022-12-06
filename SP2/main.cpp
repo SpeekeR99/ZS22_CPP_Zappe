@@ -29,10 +29,20 @@ void demonstrate() {
     std::string overflow = "-998-1\n$1-1\n998+1\n$1+1\nbank\nexit\n";
     std::stringstream overflow_ss(overflow);
     // Demonstration of division in unlimited mode
-    std::string division = "0/9999999999999999999\n123456789/123456789\n123456789/-123465789\n-123456789/-1\n"
+    std::string division = "0/9999999999999999999\n123456789/123456789\n123456789/-123456789\n-123456789/-1\n"
                            "1000000000000000000000000000000/555555555555555555555555\n555555555555555555555555555/1111111111111111111\n"
-                           "987654321123456789/12345678987654321\n9876543210123456789/12345678987654321\nbank\nexit\n";
-    std::stringstream division_ss(division);
+                           "987654321123456789/12345678987654321\n9876543210123456789/12345678987654321\n";
+    std::stringstream division_ss;
+    division_ss << division;
+    // Showcase of big number divided by the same number, but always a digit smaller
+    std::string numerator = "55555555555555555555555555555555555555555555555/";
+    std::string denominator = "11111111111111111111111111111111111111111111111";
+    for (int32_t i = 0; i < denominator.length(); i++) {
+        auto denominator_view = std::string_view(denominator); // Create a view of the denominator
+        denominator_view.remove_suffix(i); // Remove the last i digits
+        division_ss << numerator << denominator_view << "\n";
+    }
+    division_ss << "exit\n";
     // Demonstration of factorials in unlimited mode
     std::string factorial = "-1!\n0!\n1!\n5!\n$1!\n1000!\nexit\n";
     std::stringstream factorial_ss(factorial);
@@ -118,4 +128,6 @@ int main(int argc, char **argv) {
         demonstrate();
 
     return EXIT_SUCCESS;
+
+    // 55555555555555555555555555555555555555555555555/11111111111111111111111111111111111111111111111
 }
