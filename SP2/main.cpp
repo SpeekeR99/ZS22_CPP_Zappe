@@ -51,14 +51,14 @@ void demonstrate() {
     std::stringstream large_ss(large);
 
     // Prepare terminals
-    MPTerm<3> term_3;
-    MPTerm<10> term_10_1;
-    MPTerm<10> term_10_2;
-    MPTerm<10> term_10_3;
-    MPTerm<10> term_10_4;
-    MPTerm<UNLIMITED> term_unlimited_1;
-    MPTerm<UNLIMITED> term_unlimited_2;
-    MPTerm<UNLIMITED> term_unlimited_3;
+    MPTerm<int32_t, 3> term_3;
+    MPTerm<int32_t, 10> term_10_1;
+    MPTerm<int32_t, 10> term_10_2;
+    MPTerm<int32_t, 10> term_10_3;
+    MPTerm<int32_t, 10> term_10_4;
+    MPTerm<int32_t, UNLIMITED> term_unlimited_1;
+    MPTerm<int32_t, UNLIMITED> term_unlimited_2;
+    MPTerm<int32_t, UNLIMITED> term_unlimited_3;
 
     std::cout << "Demonstration of the Multiple Precision Calculator" << std::endl;
 
@@ -136,10 +136,10 @@ int main(int argc, char **argv) {
 
     // Run the program in the selected mode
     if (mode == 1) {
-        std::unique_ptr<MPTerm<UNLIMITED>> terminal = std::make_unique<MPTerm<UNLIMITED>>();
+        std::unique_ptr<MPTerm<int32_t, UNLIMITED>> terminal = std::make_unique<MPTerm<int32_t, UNLIMITED>>();
         terminal->run();
     } else if (mode == 2) {
-        std::unique_ptr<MPTerm<78>> terminal = std::make_unique<MPTerm<78>>(); // 32 bytes = 256 bits ~ 78 digits
+        std::unique_ptr<MPTerm<int32_t, 78>> terminal = std::make_unique<MPTerm<int32_t, 78>>(); // 32 bytes = 256 bits ~ 78 digits
         terminal->run();
     } else if (mode == 3)
         demonstrate();

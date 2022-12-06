@@ -9,13 +9,13 @@
  * Terminal for the Multiple Precision Calculator
  * @tparam max_digits Maximum number of digits for the numbers
  */
-template<int32_t max_digits>
+template<ValidDigit T, T max_digits>
 class MPTerm {
 private:
     /**
      * Bank of last five results
      */
-    std::array<MPInt<max_digits>, 5> bank;
+    std::array<MPInt<T, max_digits>, 5> bank;
 
     /**
      * Prints the initial information message
@@ -64,7 +64,7 @@ private:
         else if (input == "bank" || input == "BANK") {
             std::cout << "Bank: " << std::endl;
             size_t i = 1;
-            std::for_each(bank.begin(), bank.end(), [&i](MPInt<max_digits> &n) { // Lambda function
+            std::for_each(bank.begin(), bank.end(), [&i](MPInt<T, max_digits> &n) { // Lambda function
                 std::cout << "$" << i << " = " << n << std::endl;
                 i++;
             });
@@ -88,7 +88,7 @@ private:
             return;
         }
 
-        MPInt<max_digits> result;
+        MPInt<T, max_digits> result;
         // If the input matches the first format, parse it
         // Get the first number
         std::smatch match;
@@ -108,15 +108,15 @@ private:
             number2 = match.str();
         }
         // Parse the numbers
-        MPInt<max_digits> num1, num2;
+        MPInt<T, max_digits> num1, num2;
         if (number1[0] == '$')
             num1 = bank[number1[1] - '1'];
         else
-            num1 = MPInt<max_digits>(number1);
+            num1 = MPInt<T, max_digits>(number1);
         if (number2[0] == '$')
             num2 = bank[number2[1] - '1'];
         else
-            num2 = MPInt<max_digits>(number2);
+            num2 = MPInt<T, max_digits>(number2);
 
         // Try to perform the operation
         if (!performOperation(num1, num2, op, result))
@@ -139,8 +139,8 @@ private:
      * @param result Result of the operation (if successful)
      * @return True if the operation was successful, false otherwise
      */
-    bool performOperation(MPInt<max_digits> &num1, MPInt<max_digits> &num2, const std::string &op,
-                          MPInt<max_digits> &result) {
+    bool performOperation(MPInt<T, max_digits> &num1, MPInt<T, max_digits> &num2, const std::string &op,
+                          MPInt<T, max_digits> &result) {
         try {
             if (op == "+")
                 result = num1 + num2;

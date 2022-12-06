@@ -361,7 +361,7 @@ public:
  * without overflowing a 64 bit integer
  * @tparam max_digits Maximum number of digits in the integer (excluding the sign) (UNLIMITED is possible)
  */
-template<int32_t max_digits>
+template<ValidDigit T, T max_digits>
 class MPInt {
 private:
     /** Vector of digits representing the integer */
@@ -395,7 +395,7 @@ private:
      * @return Factorial of the number
      */
     [[nodiscard]] MPInt factorial() const {
-        MPInt<UNLIMITED> result("1");
+        MPInt<T, UNLIMITED> result("1");
         uint32_t i = 2;
         while (true) {
             MPInt temp(std::to_string(i));
@@ -513,14 +513,14 @@ public:
      * @param other Other MPInt instance
      * @return Sum of the two MPInt instances with the same number of digits as the maximum number of digits of the two
      */
-    template<int32_t max_digits_other>
-    MPInt<MaxDigits<max_digits, max_digits_other>::value> operator+(const MPInt<max_digits_other> &other) {
+    template<T max_digits_other>
+    MPInt<T, MaxDigits<max_digits, max_digits_other>::value> operator+(const MPInt<T, max_digits_other> &other) {
         // +x + +y OR -x + -y -> Addition (with the same sign)
         if (mSign == other.getSign())
             return {add(mNumber, other.getNumber()), mSign};
             // +x + -y OR -x + +y -> Subtraction (but swap sign of the second operand)
         else {
-            MPInt<max_digits_other> tmp{other.getNumber(), -other.getSign()};
+            MPInt<T, max_digits_other> tmp{other.getNumber(), -other.getSign()};
             return *this - tmp;
         }
     }
@@ -532,8 +532,8 @@ public:
      * @param other Other MPInt instance
      * @return Sum of the two MPInt instances with the same number of digits as this MPInt instance
      */
-    template<int32_t max_digits_other>
-    MPInt operator+=(const MPInt<max_digits_other> &other) {
+    template<T max_digits_other>
+    MPInt operator+=(const MPInt<T, max_digits_other> &other) {
         auto result = *this + other;
         // Check if the number is too large for the given number of digits
         if (MaxDigits<max_digits, max_digits_other>::value != max_digits)
@@ -561,8 +561,8 @@ public:
      * @return Difference of the two MPInt instances with the same number of digits as the maximum number of digits of
      *         the two
      */
-    template<int32_t max_digits_other>
-    MPInt<MaxDigits<max_digits, max_digits_other>::value> operator-(const MPInt<max_digits_other> &other) {
+    template<T max_digits_other>
+    MPInt<T, MaxDigits<max_digits, max_digits_other>::value> operator-(const MPInt<T, max_digits_other> &other) {
         // Check if the two numbers are the same with different signs
         if (mNumber == other.getNumber() && mSign == other.getSign())
             return {{0}, 1}; // To avoid negative zero
@@ -576,7 +576,7 @@ public:
         }
             // +x - -y OR -x - +y -> Addition (but swap sign of the second operand)
         else {
-            MPInt<max_digits_other> tmp{other.getNumber(), -other.getSign()};
+            MPInt<T, max_digits_other> tmp{other.getNumber(), -other.getSign()};
             return *this + tmp;
         }
     }
@@ -588,8 +588,8 @@ public:
      * @param other Other MPInt instance
      * @return Difference of the two MPInt instances with the same number of digits as this MPInt instance
      */
-    template<int32_t max_digits_other>
-    MPInt operator-=(const MPInt<max_digits_other> &other) {
+    template<T max_digits_other>
+    MPInt operator-=(const MPInt<T, max_digits_other> &other) {
         auto result = *this - other;
         // Check if the number is too large for the given number of digits
         if (MaxDigits<max_digits, max_digits_other>::value != max_digits)
@@ -610,8 +610,8 @@ public:
      * @return Product of the two MPInt instances with the same number of digits as the maximum number of digits of
      *         the two
      */
-    template<int32_t max_digits_other>
-    MPInt<MaxDigits<max_digits, max_digits_other>::value> operator*(const MPInt<max_digits_other> &other) {
+    template<T max_digits_other>
+    MPInt<T, MaxDigits<max_digits, max_digits_other>::value> operator*(const MPInt<T, max_digits_other> &other) {
         std::vector<uint32_t> zero{0};
         std::vector<uint32_t> one{1};
 
@@ -642,8 +642,8 @@ public:
      * @param other Other MPInt instance
      * @return Product of the two MPInt instances with the same number of digits as this MPInt instance
      */
-    template<int32_t max_digits_other>
-    MPInt operator*=(const MPInt<max_digits_other> &other) {
+    template<T max_digits_other>
+    MPInt operator*=(const MPInt<T, max_digits_other> &other) {
         auto result = *this * other;
         // Check if the number is too large for the given number of digits
         if (MaxDigits<max_digits, max_digits_other>::value != max_digits)
@@ -664,8 +664,8 @@ public:
      * @return Quotient of the two MPInt instances with the same number of digits as the maximum number of digits of
      *         the two
      */
-    template<int32_t max_digits_other>
-    MPInt<MaxDigits<max_digits, max_digits_other>::value> operator/(const MPInt<max_digits_other> &other) {
+    template<T max_digits_other>
+    MPInt<T, MaxDigits<max_digits, max_digits_other>::value> operator/(const MPInt<T, max_digits_other> &other) {
         std::vector<uint32_t> zero{0};
         std::vector<uint32_t> one{1};
 
@@ -711,8 +711,8 @@ public:
      * @param other Other MPInt instance
      * @return Quotient of the two MPInt instances with the same number of digits as this MPInt instance
      */
-    template<int32_t max_digits_other>
-    MPInt operator/=(const MPInt<max_digits_other> &other) {
+    template<T max_digits_other>
+    MPInt operator/=(const MPInt<T, max_digits_other> &other) {
         auto result = *this / other;
         // No need to check if the number is too large for the given number of digits because it's division
         // Copy the result to this instance
@@ -743,8 +743,8 @@ public:
      * @param other Other MPInt instance
      * @return Result of the comparison
      */
-    template<int32_t max_digits_other>
-    std::strong_ordering operator<=>(const MPInt<max_digits_other> &other) const {
+    template<T max_digits_other>
+    std::strong_ordering operator<=>(const MPInt<T, max_digits_other> &other) const {
         // Compare the signs
         if (mSign != other.getSign())
             return mSign <=> other.getSign();
@@ -778,8 +778,8 @@ public:
      * @param other Other MPInt instance
      * @return Result of the comparison
      */
-    template<int32_t max_digits_other>
-    bool operator==(const MPInt<max_digits_other> &other) const {
+    template<T max_digits_other>
+    bool operator==(const MPInt<T, max_digits_other> &other) const {
         return ((*this <=> other) == std::strong_ordering::equal);
     }
 
