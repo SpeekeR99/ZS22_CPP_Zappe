@@ -243,7 +243,64 @@ std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<u
         // Reversed remainder is once again used for comparisons (remainder is stored in dividend now)
         remainder_reversed = dividend;
         std::reverse(remainder_reversed.begin(), remainder_reversed.end());
-    } while (remainder_reversed >= num2_reversed); // Do this until the remainder is smaller than the ORIGINAL divisor
+        // Do this until the remainder is smaller than the ORIGINAL divisor
+    } while ([remainder_reversed, num2_reversed]() -> bool { // Lambda function for more complex check than just a comparison
+        // If the remainder is bigger by size, automatically return true
+        if (remainder_reversed.size() > num2_reversed.size())
+            return true;
+        // If the remainder is smaller by size, automatically return false
+        else if (remainder_reversed.size() < num2_reversed.size())
+            return false;
+        // If the two are the same size compare them
+        else {
+            // Convert to strings for easier comparison (because of leading zeros)
+            std::string remainder_str = std::to_string(remainder_reversed[0]);
+            std::string num2_str = std::to_string(num2_reversed[0]);
+
+            // If the first digit (in the meaning of the BASE) is bigger, return true
+            if (remainder_str.length() > num2_str.length())
+                return true;
+            // If the first digit (in the meaning of the BASE) is smaller, return false
+            else if (remainder_str.length() < num2_str.length())
+                return false;
+
+            // If they are the same length, compare them char by char
+            for (int32_t i = 0; i < remainder_str.length(); i++) {
+                if (remainder_str[i] > num2_str[i])
+                    continue;
+                if (remainder_str[i] < num2_str[i])
+                    return false;
+            }
+
+            // Let's now compare the rest, if the first digit is the same
+            for (size_t i = 1; i < remainder_reversed.size(); i++) {
+                // Create strings again
+                remainder_str = std::to_string(remainder_reversed[i]);
+                num2_str = std::to_string(num2_reversed[i]);
+
+                // Fill strings with leading zeros
+                remainder_str += std::string(9 - remainder_str.length(), '0');
+                num2_str += std::string(9 - num2_str.length(), '0');
+
+                // Strings can begin with multiple zeros (extreme "000000000" case), that is the biggest number, because
+                // they are leading zeros from the previous digit
+                bool first_zero = true;
+                // Compare the strings char by char
+                for (int8_t j = 0; j < MAX_DIGITS; j++) {
+                    // If digit is zero or a sequence of zeros, continue
+                    if (first_zero && remainder_str[j] == '0')
+                        continue;
+                    first_zero = false; // First non-zero digit found, don't continue on zeros
+                    if (remainder_str[j] > num2_str[j])
+                        continue;
+                    if (remainder_str[j] < num2_str[j])
+                        return false;
+                }
+
+            }
+        }
+        return true;
+    }());
 
     // Check for off by one error
     auto mul_product = mul(quotient, num2);
