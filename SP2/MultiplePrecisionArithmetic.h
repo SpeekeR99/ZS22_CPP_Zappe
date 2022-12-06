@@ -222,8 +222,33 @@ std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<u
         else {
             bool result = true;
             for (int32_t i = 0; i < remainder.size(); i++) {
-                if (remainder[i] < num2[i] || (remainder[i] == 0 && i < remainder.size() - 1))
-                    result = false;
+                std::string remainder_str = std::to_string(remainder[i]);
+                std::string num2_str = std::to_string(num2[i]);
+                if (i != remainder.size() - 1) {
+                    remainder_str += std::string(9 - remainder_str.size(), '0');
+                    num2_str += std::string(9 - num2_str.size(), '0');
+                }
+                else {
+                    if (remainder_str.size() < num2_str.size()) {
+                        result = false;
+                        break;
+                    }
+                }
+                if (remainder_str == "000000000" && i != remainder.size() - 1)
+                    continue;
+                bool first_zeros = true;
+                for (int32_t j = 0; j < remainder_str.size(); j++) {
+                    if (first_zeros && remainder_str[j] == '0')
+                        continue;
+                    else
+                        first_zeros = false;
+                    if (remainder_str[j] > num2_str[j])
+                        break;
+                    else if (remainder_str[j] < num2_str[j]) {
+                        result = false;
+                        break;
+                    }
+                }
             }
             return result;
         }
@@ -237,6 +262,7 @@ std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<u
     return quotient;
     // 555555555555555555555555555/1111111111111111111 = 500 000 000
     // 987654321123456789/12345678987654321 = 80
+    // 9876543210123456789/12345678987654321 = 800
 }
 
 /**
