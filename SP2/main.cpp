@@ -113,11 +113,28 @@ int main(int argc, char **argv) {
     // Check the number of arguments
     if (argc != 2) {
         std::cout << "Usage: " << argv[0] << " <mode>" << std::endl;
+        std::cout << "Modes: 1 (unlimited), 2 (limited to 32 bytes ~ 78 digits), 3 (demonstration)" << std::endl;
         return EXIT_FAILURE;
     }
 
     // Three modes are possible: 1 for unlimited precision, 2 for limited precision (32 bytes), 3 for demonstration mode
-    uint8_t mode = std::stoi(argv[1]);
+    uint8_t mode;
+    // Try to parse the mode
+    try {
+        mode = std::stoi(argv[1]);
+    }
+    catch (std::exception &e) {
+        std::cout << "Invalid mode: " << argv[1] << std::endl;
+        std::cout << "Modes: 1 (unlimited), 2 (limited to 32 bytes ~ 78 digits), 3 (demonstration)" << std::endl;
+        return EXIT_FAILURE;
+    }
+    if (mode < 1 || mode > 3) {
+        std::cout << "Invalid mode: " << argv[1] << std::endl;
+        std::cout << "Modes: 1 (unlimited), 2 (limited to 32 bytes ~ 78 digits), 3 (demonstration)" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    // Run the program in the selected mode
     if (mode == 1) {
         std::unique_ptr<MPTerm<UNLIMITED>> terminal = std::make_unique<MPTerm<UNLIMITED>>();
         terminal->run();
