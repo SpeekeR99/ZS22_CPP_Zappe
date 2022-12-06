@@ -47,7 +47,7 @@ void demonstrate() {
     std::string factorial = "-1!\n0!\n1!\n5!\n$1!\n1000!\nexit\n";
     std::stringstream factorial_ss(factorial);
     // Demonstration of large random numbers in unlimited mode
-    std::string large = "1234567890123456789*98765432109876543210\n$1*-420\n$2-$1\n$3/$2\n$4+$1\n120!\n100!\n$2/$1\nbank\nexit\n";
+    std::string large = "1234567890123456789*98765432109876543210\n$1*-420\n$2-$1\n$2/$3\n$4+$1\n120!\n100!\n$2/$1\nbank\nexit\n";
     std::stringstream large_ss(large);
 
     // Prepare terminals
