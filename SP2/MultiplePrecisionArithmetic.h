@@ -282,10 +282,6 @@ std::vector<uint32_t> div(const std::vector<uint32_t> &num1, const std::vector<u
                 remainder_str += std::string(9 - remainder_str.length(), '0');
                 num2_str += std::string(9 - num2_str.length(), '0');
 
-                // Strings can begin with multiple zeros (extreme "000000000" case), that is the biggest number, because
-                // they are leading zeros from the previous digit
-                if (remainder_str[0] == '0')
-                    return true;
                 // Compare the strings char by char
                 for (int8_t j = 0; j < MAX_DIGITS; j++) {
                     // If digit is zero or a sequence of zeros, continue
